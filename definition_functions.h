@@ -4,6 +4,7 @@
 // Declaration of functions
 // *************************************
 
+void fill_hist_scale_factors();
 void fill_histograms_for_data();
 void fill_histograms_for_ttbar(float weight);
 void scale_histograms(float sumw);
@@ -19,6 +20,18 @@ void set_branch_address(TChain *inChain);
 // *************************************
 // Definition of the functions declared above
 // *************************************
+
+void fill_hist_scale_factors(){
+
+  hist_ScaleFactor_PILEUP->Fill(ScaleFactor_PILEUP);
+  hist_ScaleFactor_BTAG->Fill(ScaleFactor_BTAG);
+  hist_ScaleFactor_ELE->Fill(ScaleFactor_ELE);
+  hist_ScaleFactor_MUON->Fill(ScaleFactor_MUON);
+  hist_ScaleFactor_PHOTON->Fill(ScaleFactor_PHOTON);
+  hist_ScaleFactor_TAU->Fill(ScaleFactor_TAU);
+
+}
+
 
 void fill_histograms_for_data(){
 

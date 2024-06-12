@@ -192,3 +192,12 @@ TH1F *ttbar_hist_lep_pt = new TH1F("ttbar_hist_lep_pt", "p_{T} distribution of t
 // Dilepton eta histograms
 TH1F *data_hist_lep_eta = new TH1F("data_hist_lep_eta", "|#eta| distribution of the dilepton system; 2l |#eta|; Events", 25, 0, 2.5);
 TH1F *ttbar_hist_lep_eta = new TH1F("ttbar_hist_lep_eta", "|#eta| distribution of the dilepton system; 2l |#eta|; Events", 25, 0, 2.5);
+
+// Scale factors histograms
+
+TH1F *hist_ScaleFactor_PILEUP = new TH1F("hist_ScaleFactor_PILEUP", "Scale Factor for PILEUP; ; Events / 0.1 bins", 100, -1, 9);
+TH1F *hist_ScaleFactor_BTAG = new TH1F("hist_ScaleFactor_BTAG", "Scale Factor for BTAG; ; Events / 0.05 bins", 100, -1, 4);
+TH1F *hist_ScaleFactor_ELE = new TH1F("hist_ScaleFactor_ELE", "Scale Factor for ELE; ; Events / 0.05 bins", 100, -1, 4);
+TH1F *hist_ScaleFactor_MUON = new TH1F("hist_ScaleFactor_MUON", "Scale Factor for MUON; ; Events / 0.05 bins", 100, -1, 4);
+TH1F *hist_ScaleFactor_PHOTON = new TH1F("hist_ScaleFactor_PHOTON", "Scale Factor for PHOTON; ; Events / 0.05 bins", 100, -1, 4);
+TH1F *hist_ScaleFactor_TAU = new TH1F("hist_ScaleFactor_TAU", "Scale Factor for TAU; ; Events / 0.05 bins", 100, -1, 4);
