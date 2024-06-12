@@ -17,23 +17,25 @@ void ttbar_selection(){
   std::vector<TString> data_samples = {"data15_allyear.root", "data16_allyear_A.root", "data16_allyear_B.root", "data16_allyear_C.root", "data16_allyear_D.root", "data16_allyear_E.root", "data16_allyear_F.root", "data16_allyear_G.root", "data16_allyear_H.root"};
   
   std::vector<TString> ttbar_samples = {"ttbar.root"};
-  
-  TChain *chain_data = new TChain("analysis");
+    
+  //TChain *chain_data = new TChain("analysis");
   TChain *chain_ttbar = new TChain("analysis");
-  
+  /*
   for(int ii=0; ii<data_samples.size(); ii++){
     chain_data->AddFile(path+data_samples[ii]);
   }
-
+  */
+  
   for(int ii=0; ii<ttbar_samples.size(); ii++){
     chain_ttbar->AddFile(path+ttbar_samples[ii]);
   }
-  
+  /*
   std::cout << "Number of files in data chain: " << chain_data->GetListOfFiles()->GetEntries() << std::endl;
   std::cout << "Number of entries in data chain: " << chain_data->GetEntries()*fraction << std::endl;
   Long64_t nentries_data = chain_data->GetEntries();
 
   set_branch_address(chain_data);
+  */
   
   //float fraction = 0.01;
 
@@ -42,7 +44,7 @@ void ttbar_selection(){
   int OP_charge_leptons_cut = 0;
   int type_leptons_cut = 0;
   int bjets_cut = 0;
-
+  /*
   cout << "Processing data" << endl;
   
   for(int ii=0; ii < nentries_data*fraction; ii++){
@@ -70,7 +72,8 @@ void ttbar_selection(){
   cout << "The percentage of events passing the opposite charged leptons cut is: " << OP_charge_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the type lepton cut is: " << type_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the bjets number cut is: " << bjets_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-
+  */
+  
   cout << "Processing ttbar" << endl;
 
   std::cout << "Number of files in ttbar chain: " << chain_ttbar->GetListOfFiles()->GetEntries() << std::endl;
@@ -115,27 +118,38 @@ void ttbar_selection(){
     type_leptons_cut++;
     if( selection_good_bjets_cut(bjet_index1, bjet_index2)==false ) continue;
     bjets_cut++;
-    fill_histograms_for_ttbar(weight);
+    //fill_histograms_for_ttbar(weight);
+    fill_hist_scale_factors();
   }
-  
-  cout << "The percentage of events passing the trigger cut is: " << trigger_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-  cout << "The percentage of events passing the good lepton number cut is: " << good_lepton_n_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-  cout << "The percentage of events passing the opposite charged leptons cut is: " << OP_charge_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-  cout << "The percentage of events passing the type lepton cut is: " << type_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-  cout << "The percentage of events passing the bjets number cut is: " << bjets_cut/(nentries_data*fraction)*100.0 << "%" << endl;
 
+  plot_scale_factors("SF_PILEUP");
+  plot_scale_factors("SF_BTAG");
+  plot_scale_factors("SF_ELE");
+  plot_scale_factors("SF_MUON");
+  plot_scale_factors("SF_PHOTON");
+  plot_scale_factors("SF_TAU");
+
+  cout << "The percentage of events passing the trigger cut is: " << trigger_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
+  cout << "The percentage of events passing the good lepton number cut is: " << good_lepton_n_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
+  cout << "The percentage of events passing the opposite charged leptons cut is: " << OP_charge_leptons_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
+  cout << "The percentage of events passing the type lepton cut is: " << type_leptons_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
+  cout << "The percentage of events passing the bjets number cut is: " << bjets_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
+  
   float totalSumOfWeights = 0.0;
+  int file = 1;
   for (const auto& weight : uniqueWeights){
     totalSumOfWeights += weight;
-    //cout << weight << endl;
+    cout << "File: " << file << "\t  \t" << weight << endl;
+    file++;
   }
-  cout << "Total sum of weights: " << totalSumOfWeights << endl;
   
+  cout << "Total sum of weights: " << totalSumOfWeights << endl;
+  /*
   scale_histograms(totalSumOfWeights);
   plot_distributions_comparison("met");
   plot_distributions_comparison("lep_pt");
   plot_distributions_comparison("lep_eta");
-  
+  */
   auto end = chrono::steady_clock::now();
   auto elapsed = chrono::duration_cast<chrono::seconds>(end - start).count();
   auto time_in_min = elapsed/60.;

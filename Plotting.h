@@ -3,7 +3,62 @@
 #include "AtlasStyle/AtlasLabels.C"
 #include "declaration_of_variables.h"
 
+void plot_scale_factors(TString name_plot);
 void plot_distributions_comparison(TString name_plot);
+
+
+void plot_scale_factors(TString name_plot){
+
+  SetAtlasStyle();
+  
+  //TLegend *leg = new TLegend(0.7, 0.75, 0.85, 0.85);
+  TH1F *SF_hist = new TH1F();
+  
+  TString name_image = "distribution_plots/"+name_plot+".png";
+  //bool log_scale = false;
+  TString header = "";
+  
+  if(name_plot=="SF_PILEUP"){
+    SF_hist = hist_ScaleFactor_PILEUP;
+    header = "hist_ScaleFactor_PILEUP", "Scale Factor for PILEUP; ; Events";
+  }
+
+  if(name_plot=="SF_BTAG"){
+    SF_hist = hist_ScaleFactor_BTAG;
+    header = "hist_ScaleFactor_BTAG", "Scale Factor for BTAG; ; Events";
+  }
+
+  if(name_plot=="SF_ELE"){
+    SF_hist = hist_ScaleFactor_ELE;
+    header = "hist_ScaleFactor_ELE", "Scale Factor for ELE; ; Events";
+  }
+
+  if(name_plot=="SF_MUON"){
+    SF_hist = hist_ScaleFactor_MUON;
+    header = "hist_ScaleFactor_MUON", "Scale Factor for MUON; ; Events";
+  }
+
+  if(name_plot=="SF_PHOTON"){
+    SF_hist = hist_ScaleFactor_PHOTON;
+    header = "hist_ScaleFactor_PHOTON", "Scale Factor for PHOTON; ; Events";
+  }
+
+  if(name_plot=="SF_TAU"){
+    SF_hist = hist_ScaleFactor_TAU;
+    header = "hist_ScaleFactor_TAU", "Scale Factor for TAU; ; Events";
+  }
+  
+  TCanvas *can = new TCanvas("can","", 800, 600);
+  //  SF_hist->
+  SF_hist->Draw();
+  ATLASLabel(0.55, 0.8, "Work in Progress", kBlack);
+  myText(0.55, 0.75, kBlack, name_plot);
+  //myText(0.2, 0.8-dely, kBlack, "for class: "+label_leg);
+  //myText(0.2, 0.8-2*dely, kBlack, name_plot);
+
+  can->SaveAs(name_image);
+  
+}
 
 
 void plot_distributions_comparison(TString name_plot){
