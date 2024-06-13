@@ -65,7 +65,7 @@ void fill_histograms_for_ttbar(float weight){
 
 void scale_histograms(float sumw){
   //float scale_val = xsec*lumi*1000/sumw;
-  float scale_val = lumi*fraction*1000.0/sumw;
+  float scale_val = XSEC*lumi*fraction*1000.0/sumw;
   ttbar_hist_met->Scale(scale_val);
   ttbar_hist_lep_pt->Scale(scale_val);
   ttbar_hist_lep_eta->Scale(scale_val);
