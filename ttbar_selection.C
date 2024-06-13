@@ -18,39 +18,34 @@ void ttbar_selection(){
   
   std::vector<TString> ttbar_samples = {"ttbar.root"};
     
-  //TChain *chain_data = new TChain("analysis");
+  TChain *chain_data = new TChain("analysis");
   TChain *chain_ttbar = new TChain("analysis");
-  /*
+  
   for(int ii=0; ii<data_samples.size(); ii++){
     chain_data->AddFile(path+data_samples[ii]);
   }
-  */
-  
+    
   for(int ii=0; ii<ttbar_samples.size(); ii++){
     chain_ttbar->AddFile(path+ttbar_samples[ii]);
   }
-  /*
+  
   std::cout << "Number of files in data chain: " << chain_data->GetListOfFiles()->GetEntries() << std::endl;
   std::cout << "Number of entries in data chain: " << chain_data->GetEntries()*fraction << std::endl;
   Long64_t nentries_data = chain_data->GetEntries();
 
   set_branch_address(chain_data);
-  */
   
-  //float fraction = 0.01;
-
   int trigger_cut = 0;
   int good_lepton_n_cut = 0;
   int OP_charge_leptons_cut = 0;
   int type_leptons_cut = 0;
   int bjets_cut = 0;
-  /*
+  
   cout << "Processing data" << endl;
   
   for(int ii=0; ii < nentries_data*fraction; ii++){
     chain_data->GetEntry(ii);
-    //int lep_index1 = -1;
-    //int lep_index2 = -1;
+  
     int bjet_index1 = -1;
     int bjet_index2 = -1;
 
@@ -72,7 +67,6 @@ void ttbar_selection(){
   cout << "The percentage of events passing the opposite charged leptons cut is: " << OP_charge_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the type lepton cut is: " << type_leptons_cut/(nentries_data*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the bjets number cut is: " << bjets_cut/(nentries_data*fraction)*100.0 << "%" << endl;
-  */
   
   cout << "Processing ttbar" << endl;
 
@@ -97,14 +91,15 @@ void ttbar_selection(){
 
   for(int ii=0; ii < nentries_ttbar*fraction; ii++){
     chain_ttbar->GetEntry(ii);
+
+    if(ii==0) XSEC = xsec;
     
-    //int lep_index1 = -1;
-    //int lep_index2 = -1;
     int bjet_index1 = -1;
     int bjet_index2 = -1;
 
     float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_PHOTON*ScaleFactor_TAU;
-    float weight = xsec*mcWeight*SF;
+    //float weight = xsec*mcWeight*SF;
+    float weight = mcWeight*SF;
     
     uniqueWeights.insert(initial_sum_of_weights);
     
@@ -118,17 +113,19 @@ void ttbar_selection(){
     type_leptons_cut++;
     if( selection_good_bjets_cut(bjet_index1, bjet_index2)==false ) continue;
     bjets_cut++;
-    //fill_histograms_for_ttbar(weight);
+    fill_histograms_for_ttbar(weight);
     fill_hist_scale_factors();
   }
 
+  cout << "The xsec for ttbar is " << XSEC << endl;
+  
   plot_scale_factors("SF_PILEUP");
   plot_scale_factors("SF_BTAG");
   plot_scale_factors("SF_ELE");
   plot_scale_factors("SF_MUON");
   plot_scale_factors("SF_PHOTON");
   plot_scale_factors("SF_TAU");
-
+  
   cout << "The percentage of events passing the trigger cut is: " << trigger_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the good lepton number cut is: " << good_lepton_n_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the opposite charged leptons cut is: " << OP_charge_leptons_cut/(nentries_ttbar*fraction)*100.0 << "%" << endl;
@@ -144,12 +141,12 @@ void ttbar_selection(){
   }
   
   cout << "Total sum of weights: " << totalSumOfWeights << endl;
-  /*
+  
   scale_histograms(totalSumOfWeights);
   plot_distributions_comparison("met");
   plot_distributions_comparison("lep_pt");
   plot_distributions_comparison("lep_eta");
-  */
+ 
   auto end = chrono::steady_clock::now();
   auto elapsed = chrono::duration_cast<chrono::seconds>(end - start).count();
   auto time_in_min = elapsed/60.;

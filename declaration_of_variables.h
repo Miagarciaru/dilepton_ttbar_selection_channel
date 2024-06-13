@@ -5,6 +5,7 @@
 TString process_name = "";
 float lumi = 36.0;
 float fraction = 1.0;
+float XSEC;
 
 // *************************************
 // Declaration of leaf variables
@@ -182,16 +183,16 @@ TBranch *b_initial_sum_of_weights_squared;
 // *************************************
 
 // Missing Transverse Energy histograms
-TH1F *data_hist_met = new TH1F("data_hist_met", "Missing Transverse Energy distribution; MET [GeV]; Events", 30, 0, 200);
-TH1F *ttbar_hist_met = new TH1F("ttbar_hist_met", "Missing Transverse Energy distribution; MET [GeV]; Events", 30, 0, 200);
+TH1F *data_hist_met = new TH1F("data_hist_met", "Missing Transverse Energy distribution; E_{T}^{miss} [GeV]; Events", 30, 0, 200);
+TH1F *ttbar_hist_met = new TH1F("ttbar_hist_met", "Missing Transverse Energy distribution; E_{T}^{miss} [GeV]; Events", 30, 0, 200);
 
 // Dilepton pT histograms
-TH1F *data_hist_lep_pt = new TH1F("data_hist_lep_pt", "p_{T} distribution of the dilepton system; p_{T} [GeV]; Events", 50, 0, 450);
-TH1F *ttbar_hist_lep_pt = new TH1F("ttbar_hist_lep_pt", "p_{T} distribution of the dilepton system; p_{T} [GeV]; Events", 50, 0, 450);
+TH1F *data_hist_lep_pt = new TH1F("data_hist_lep_pt", "p_{T} distribution of the dilepton system; p_{T}^{e #mu} [GeV]; Events", 50, 0, 450);
+TH1F *ttbar_hist_lep_pt = new TH1F("ttbar_hist_lep_pt", "p_{T} distribution of the dilepton system; p_{T}^{e #mu} [GeV]; Events", 50, 0, 450);
 
 // Dilepton eta histograms
-TH1F *data_hist_lep_eta = new TH1F("data_hist_lep_eta", "|#eta| distribution of the dilepton system; 2l |#eta|; Events", 25, 0, 2.5);
-TH1F *ttbar_hist_lep_eta = new TH1F("ttbar_hist_lep_eta", "|#eta| distribution of the dilepton system; 2l |#eta|; Events", 25, 0, 2.5);
+TH1F *data_hist_lep_eta = new TH1F("data_hist_lep_eta", "|#eta| distribution of the dilepton system; |#eta_{e #mu}|; Events", 25, 0, 2.5);
+TH1F *ttbar_hist_lep_eta = new TH1F("ttbar_hist_lep_eta", "|#eta| distribution of the dilepton system; |#eta_{e #mu}|; Events", 25, 0, 2.5);
 
 // Scale factors histograms
 
