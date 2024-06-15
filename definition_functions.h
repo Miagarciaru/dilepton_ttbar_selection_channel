@@ -1,19 +1,19 @@
-#include "Plotting.h"
+#include "declaration_of_variables.h"
+
+//#include "Plotting.h"
 
 // *************************************
 // Declaration of functions
 // *************************************
 
 void fill_hist_scale_factors();
-void fill_histograms_for_data();
 void fill_histograms_for_ttbar(float weight);
-void scale_histograms(float sumw);
+void scale_histograms(float sumw, TString name_plot);
 bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2);
 bool opposite_charge_leptons_cut(int lep_index1, int lep_index2);
 bool flavour_leptons_cut(int lep_index1, int lep_index2);
 bool lepton_trigger_cut();
 bool good_leptons_n_cut(int &lep_index1, int &lep_index2);
-void deltaR(float &dR, float jet1_pt, float jet1_eta, float jet1_phi, float jet1_m, float jet2_pt, float jet2_eta, float jet2_phi, float jet2_m);
 void set_branch_address(TChain *inChain);
 
 
@@ -32,23 +32,7 @@ void fill_hist_scale_factors(){
 
 }
 
-
-void fill_histograms_for_data(){
-
-  TLorentzVector lep1 = TLorentzVector();  
-  TLorentzVector lep2 = TLorentzVector();
-  TLorentzVector dilep = TLorentzVector();
-
-  lep1.SetPtEtaPhiE(lep_pt->at(glep_index1), lep_eta->at(glep_index1), lep_phi->at(glep_index1), lep_e->at(glep_index1));
-  lep2.SetPtEtaPhiE(lep_pt->at(glep_index2), lep_eta->at(glep_index2), lep_phi->at(glep_index2), lep_e->at(glep_index2));
-  dilep = lep1 + lep2;
-  
-  data_hist_met->Fill(met);
-  data_hist_lep_pt->Fill(dilep.Pt());
-  data_hist_lep_eta->Fill(TMath::Abs(dilep.Eta()));
-}
-
-void fill_histograms_for_ttbar(float weight){
+void fill_histograms(float weight){
   
   TLorentzVector lep1 = TLorentzVector();  
   TLorentzVector lep2 = TLorentzVector();
@@ -58,17 +42,18 @@ void fill_histograms_for_ttbar(float weight){
   lep2.SetPtEtaPhiE(lep_pt->at(glep_index2), lep_eta->at(glep_index2), lep_phi->at(glep_index2), lep_e->at(glep_index2));
   dilep = lep1 + lep2;
   
-  ttbar_hist_met->Fill(met, weight);
-  ttbar_hist_lep_pt->Fill(dilep.Pt(), weight);
-  ttbar_hist_lep_eta->Fill(TMath::Abs(dilep.Eta()), weight);
+  hist_met->Fill(met, weight);
+  hist_lep_pt->Fill(dilep.Pt(), weight);
+  hist_lep_eta->Fill(TMath::Abs(dilep.Eta()), weight);
+
 }
 
-void scale_histograms(float sumw){
+void scale_histograms(float sumw, TString name_plot){
   //float scale_val = xsec*lumi*1000/sumw;
   float scale_val = XSEC*lumi*fraction*1000.0/sumw;
-  ttbar_hist_met->Scale(scale_val);
-  ttbar_hist_lep_pt->Scale(scale_val);
-  ttbar_hist_lep_eta->Scale(scale_val);
+  hist_met->Scale(scale_val);
+  hist_lep_pt->Scale(scale_val);
+  hist_lep_eta->Scale(scale_val);
 }
 
 bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2){
@@ -172,18 +157,6 @@ bool good_leptons_n_cut(int &lep_index1, int &lep_index2){
   lep_index2 = goodlep_index[1];
   
   return true;
-}
-
-
-void deltaR(float &dR, float jet1_pt, float jet1_eta, float jet1_phi, float jet1_m, float jet2_pt, float jet2_eta, float jet2_phi, float jet2_m){
-
-  TLorentzVector jet1  = TLorentzVector();
-  TLorentzVector jet2  = TLorentzVector();
-      
-  jet1.SetPtEtaPhiM(jet1_pt/1000., jet1_eta, jet1_phi, jet1_m/1000.);
-  jet2.SetPtEtaPhiM(jet2_pt/1000., jet2_eta, jet2_phi, jet2_m/1000.);
-
-  dR = jet1.DeltaR(jet2);
 }
 
 
