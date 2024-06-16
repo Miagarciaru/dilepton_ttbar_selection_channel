@@ -5,7 +5,7 @@ void ttbar_selection(TString sample_path, TString sample_name){
 
   // Path of the merged samples
 
-  std::cout.precision(5);
+  //std::cout.precision(5);
   //std::cout.setf(std::ios::scientific);
 
   cout << "----------------------------------------------------------------------------------------------------------------" << endl;
@@ -59,13 +59,13 @@ void ttbar_selection(TString sample_path, TString sample_name){
     
     if( lepton_trigger_cut() == false ) continue;
     trigger_cut++;
-    if( good_leptons_n_cut(glep_index1, glep_index2) == false ) continue;
+    if( good_leptons_n_cut() == false ) continue;
     good_lepton_n_cut++;
-    if( opposite_charge_leptons_cut(glep_index1, glep_index2) == false ) continue;
+    if( opposite_charge_leptons_cut() == false ) continue;
     OP_charge_leptons_cut++;
-    if( flavour_leptons_cut(glep_index1, glep_index2) == false ) continue;
+    if( flavour_leptons_cut() == false ) continue;
     type_leptons_cut++;
-    if( selection_good_bjets_cut(bjet_index1, bjet_index2)==false ) continue;
+    if( selection_good_bjets_cut()==false ) continue;
     bjets_cut++;
     fill_histograms(weight);
     
@@ -82,6 +82,15 @@ void ttbar_selection(TString sample_path, TString sample_name){
   hist_lep_pt->Write();
   hist_lep_eta->Write();
 
+  if(is_data==false){
+    hist_ScaleFactor_PILEUP->Write();
+    hist_ScaleFactor_BTAG->Write();
+    hist_ScaleFactor_ELE->Write();
+    hist_ScaleFactor_MUON->Write();
+    hist_ScaleFactor_PHOTON->Write();
+    hist_ScaleFactor_TAU->Write();
+  }
+  
   // Close the file
   outFile->Close();
 
@@ -89,6 +98,12 @@ void ttbar_selection(TString sample_path, TString sample_name){
   delete hist_met;
   delete hist_lep_pt;
   delete hist_lep_eta;
+  delete hist_ScaleFactor_PILEUP;
+  delete hist_ScaleFactor_BTAG;
+  delete hist_ScaleFactor_ELE;
+  delete hist_ScaleFactor_MUON;
+  delete hist_ScaleFactor_PHOTON;
+  delete hist_ScaleFactor_TAU;
   
   cout << "The percentage of events passing the trigger cut is: " << trigger_cut/(nentries*fraction)*100.0 << "%" << endl;
   cout << "The percentage of events passing the good lepton number cut is: " << good_lepton_n_cut/(nentries*fraction)*100.0 << "%" << endl;

@@ -7,13 +7,13 @@
 // *************************************
 
 void fill_hist_scale_factors();
-void fill_histograms_for_ttbar(float weight);
-void scale_histograms(float sumw, TString name_plot);
-bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2);
-bool opposite_charge_leptons_cut(int lep_index1, int lep_index2);
-bool flavour_leptons_cut(int lep_index1, int lep_index2);
+void fill_histograms(float weight);
+void scale_histograms(float sumw);
+bool selection_good_bjets_cut();
+bool opposite_charge_leptons_cut();
+bool flavour_leptons_cut();
 bool lepton_trigger_cut();
-bool good_leptons_n_cut(int &lep_index1, int &lep_index2);
+bool good_leptons_n_cut();
 void set_branch_address(TChain *inChain);
 
 
@@ -38,8 +38,8 @@ void fill_histograms(float weight){
   TLorentzVector lep2 = TLorentzVector();
   TLorentzVector dilep = TLorentzVector();
 
-  lep1.SetPtEtaPhiE(lep_pt->at(glep_index1), lep_eta->at(glep_index1), lep_phi->at(glep_index1), lep_e->at(glep_index1));
-  lep2.SetPtEtaPhiE(lep_pt->at(glep_index2), lep_eta->at(glep_index2), lep_phi->at(glep_index2), lep_e->at(glep_index2));
+  lep1.SetPtEtaPhiE(lep_pt->at(lep_index1), lep_eta->at(lep_index1), lep_phi->at(lep_index1), lep_e->at(lep_index1));
+  lep2.SetPtEtaPhiE(lep_pt->at(lep_index2), lep_eta->at(lep_index2), lep_phi->at(lep_index2), lep_e->at(lep_index2));
   dilep = lep1 + lep2;
   
   hist_met->Fill(met, weight);
@@ -48,7 +48,7 @@ void fill_histograms(float weight){
 
 }
 
-void scale_histograms(float sumw, TString name_plot){
+void scale_histograms(float sumw){
   //float scale_val = xsec*lumi*1000/sumw;
   float scale_val = XSEC*lumi*fraction*1000.0/sumw;
   hist_met->Scale(scale_val);
@@ -56,7 +56,7 @@ void scale_histograms(float sumw, TString name_plot){
   hist_lep_eta->Scale(scale_val);
 }
 
-bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2){
+bool selection_good_bjets_cut(){
   
     //Preselection of good b-jets
   
@@ -68,9 +68,9 @@ bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2){
       if( jet_pt->at(ii) <= 25. || TMath::Abs(jet_eta->at(ii)) >= 2.5 ) continue;
 
         // JVT cleaning
-      if ( jet_pt->at(ii) < 60. ){
+      if ( jet_pt->at(ii) < 120. ){
 	if( jet_jvt->size()==0 ) continue;
-	if( TMath::Abs(jet_eta->at(ii)) < 2.4 && jet_jvt->at(ii)==false ) continue;
+	if( (TMath::Abs(jet_eta->at(ii)) < 2.4) && (jet_jvt->at(ii)==false) ) continue;
       }
         
       // cut on b-tagged
@@ -91,13 +91,13 @@ bool selection_good_bjets_cut(int &bjet_index1, int &bjet_index2){
 }
 
 //opposite charge leptons
-bool opposite_charge_leptons_cut(int lep_index1, int lep_index2){
+bool opposite_charge_leptons_cut(){
   if( lep_charge->at(lep_index1)*lep_charge->at(lep_index2) > 0){ return false;} //Leptons of same charges return false
     return true;
 }
 
 //two different-flavour leptons
-bool flavour_leptons_cut(int lep_index1, int lep_index2){
+bool flavour_leptons_cut(){
   if( lep_type->at(lep_index1) == lep_type->at(lep_index2)){ return false;} //leptons of same flavours return false
     return true;
 }
@@ -108,7 +108,7 @@ bool lepton_trigger_cut(){
   return false;
 }
 
-bool good_leptons_n_cut(int &lep_index1, int &lep_index2){
+bool good_leptons_n_cut(){
  
   // Preselection of good leptons
   int goodlep_index[lep_n];

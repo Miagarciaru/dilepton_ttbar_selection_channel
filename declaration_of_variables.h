@@ -94,8 +94,11 @@ Float_t initial_events;
 Float_t initial_sum_of_weights;
 Float_t initial_sum_of_weights_squared;
 
-int glep_index1;
-int glep_index2;
+int lep_index1;
+int lep_index2;
+
+int bjet_index1;
+int bjet_index2;
 
 // *************************************
 // Declaration of branches
