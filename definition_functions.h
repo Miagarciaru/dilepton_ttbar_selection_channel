@@ -8,7 +8,6 @@
 
 void fill_hist_scale_factors();
 void fill_histograms(float weight);
-void scale_histograms(float sumw);
 bool selection_good_bjets_cut();
 bool opposite_charge_leptons_cut();
 bool flavour_leptons_cut();
@@ -48,14 +47,6 @@ void fill_histograms(float weight){
 
 }
 
-void scale_histograms(float sumw){
-  //float scale_val = xsec*lumi*1000/sumw;
-  float scale_val = XSEC*lumi*fraction*1000.0/sumw;
-  hist_met->Scale(scale_val);
-  hist_lep_pt->Scale(scale_val);
-  hist_lep_eta->Scale(scale_val);
-}
-
 bool selection_good_bjets_cut(){
   
     //Preselection of good b-jets
@@ -68,7 +59,7 @@ bool selection_good_bjets_cut(){
       if( jet_pt->at(ii) <= 25. || TMath::Abs(jet_eta->at(ii)) >= 2.5 ) continue;
 
         // JVT cleaning
-      if ( jet_pt->at(ii) < 120. ){
+      if ( jet_pt->at(ii) < 60. ){
 	if( jet_jvt->size()==0 ) continue;
 	if( (TMath::Abs(jet_eta->at(ii)) < 2.4) && (jet_jvt->at(ii)==false) ) continue;
       }

@@ -41,7 +41,7 @@ void ttbar_selection(TString sample_path, TString sample_name){
   
   for(int ii=0; ii < nentries*fraction; ii++){
 
-    if(ii%50000000==0){
+    if(ii%15000000==0){
       cout << "Processing entry " << ii << " of " << nentries << " total number of entries (Percentage of progress: " << (ii*1.0/nentries)*100 << " %)" << endl;
     }
     
@@ -50,7 +50,8 @@ void ttbar_selection(TString sample_path, TString sample_name){
     int bjet_index1 = -1;
     int bjet_index2 = -1;
     
-    float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_PHOTON*ScaleFactor_TAU;
+    //float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_PHOTON*ScaleFactor_TAU;
+    float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_TAU;
     
     float weight = mcWeight*SF;
     if((ii==0) &&(is_data==false)) XSEC=xsec;    
