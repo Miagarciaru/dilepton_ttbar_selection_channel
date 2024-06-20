@@ -21,7 +21,6 @@ sample_paths = [
     "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ttbar.root"
 ]
 """
-
 # Root folder for storing output
 output_root_folder = "output_analysis"
 
