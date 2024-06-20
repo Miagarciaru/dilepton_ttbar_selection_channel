@@ -8,26 +8,22 @@ float XSEC = 729.77;
 float fil_eff = 0.1053695;
 float k_factor = 1.13975636159;
 float sumw = 4.20575e+10;
-
-//void plot_scale_factors(TString name_plot);
-//void plot_distributions_comparison(float sumw, TString name_plot);
-
+float scale_val = (k_factor*fil_eff*XSEC*luminosity*1000.0)/sumw;
 
 // Function to get a list of histograms from a ROOT file
 void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::string& histName, std::vector<TH1F*>& dataHists,
 			    std::vector<TH1F*>& mcHists){
 
-  string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis_60GeV/";
+  string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis_wo_SFPhotons/";
+
   cout << histName << endl;
   for(const auto& file : files){
 
     string path_root_file = path_folder+file+".root";
-    
     TFile* f = TFile::Open(path_root_file.c_str());
-    //    TFile* f = TFile::Open(file.c_str());
     TH1F* hist = dynamic_cast<TH1F*>(f->Get(histName.c_str()));
-    //    TH1F* hist = dynamic_cast<TH1F*>(f->Get(histName.c_str()));
     hist->SetDirectory(0);
+    
     if(file.find("data") != std::string::npos){
       dataHists.push_back(hist);
     }
@@ -46,7 +42,6 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 
   SetAtlasStyle();
 
-  //TString name_image = "distribution_plots/"+name_plot+".png";
   bool log_scale = false;
   float scale_val = 0;
   
@@ -67,21 +62,24 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 
   data_hist->SetMarkerStyle(20);
   data_hist->SetMarkerColor(kBlack);
+  data_hist->SetMarkerSize(1.2);
+  data_hist->SetLineWidth(2);
   data_hist->SetStats(0);
 
-  scale_val = XSEC*luminosity*1000.0/sumw;
-  
-  //  scale_val = XSEC*luminosity*1000.0*k_factor/(sumw*fil_eff);
-  
   // Add MC histograms to stack
   TH1F* ttbar_hist = nullptr;
   for(const auto& hist : mcHists){
+    /* // MC overflow
+    if( TMath::Abs(hist->GetBinContent(hist->GetNbinsX()+1)) > 0 ){
+      hist->AddBinContent(hist->GetNbinsX(), hist->GetBinContent(hist->GetNbinsX()+1));
+    }
+    */
     hist->Scale(scale_val);
     hist->SetFillColorAlpha(kOrange, 0.45);
     ttbar_hist = hist;
     hstack->Add(hist);
   }
-
+  cout << "The scaling values is " << scale_val << endl;
   
   can->Divide(1, 2);
   
@@ -127,6 +125,7 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   
   if(log_scale==false){
     hstack->SetMaximum(2.0*hstack->GetMaximum());
+    //hstack->SetMaximum(1.4*data_hist->GetMaximum());
   }
   
   // statistical error histogram
@@ -140,8 +139,10 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 
   hstack->SetMinimum(0.1);
   hstack->Draw("hist");
-  //  h_err->Draw("e2same");
+  //h_err->Draw("e2same");
   h_err->Draw("e3same");
+  //data_hist->SetTitle("Entries");
+  data_hist->GetYaxis()->SetTitle(data_hist->GetYaxis()->GetTitle());
   data_hist->Draw("epsame");
     
   leg->AddEntry(data_hist, "Data", "lep");
@@ -188,31 +189,12 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   h_ratio->GetXaxis()->SetTitleOffset(1.2);
   h_ratio->GetXaxis()->SetLabelOffset(0.035);
 
-  /*
-  // Set Y-axis title and range
-  h_ratio->GetYaxis()->SetTitle("Data/Pred");
-  h_ratio->GetYaxis()->SetNdivisions(505);  // 5 divisions for better look
-  h_ratio->GetYaxis()->SetTitleSize(0.12);
-  h_ratio->GetYaxis()->SetTitleOffset(0.45);
-  h_ratio->GetYaxis()->SetLabelSize(0.10);
-  h_ratio->GetYaxis()->SetLabelOffset(0.01);
-  
-  // Set X-axis labels
-  h_ratio->GetXaxis()->SetTitle(data_hist->GetXaxis()->GetTitle());
-  h_ratio->GetXaxis()->SetTitleSize(0.15);
-  h_ratio->GetXaxis()->SetLabelSize(0.13);
-  h_ratio->GetXaxis()->SetTitleOffset(1.2);
-  h_ratio->GetXaxis()->SetLabelOffset(0.035);
-
-  
   h_ratio->Draw("EP");
-  */
-  
-  h_ratio->Draw("0E1");
-  
+  //h_ratio->Draw("0E1");
+    
   // Draw a horizontal line at ratio = 1
   TLine* line = new TLine(h_ratio->GetXaxis()->GetXmin(), 1, h_ratio->GetXaxis()->GetXmax(), 1);
-  line->SetLineStyle(1);  // Dashed line 2
+  line->SetLineStyle(2);  // Dashed line 2
   line->Draw();
 
   // Save plot
