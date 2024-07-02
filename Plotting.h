@@ -17,13 +17,6 @@ struct ScaleFactor {
 
 float luminosity = 36.0;
 float fraction = 1.0;
-/*
-float XSEC = 729.77;
-float fil_eff = 0.1053695;
-float k_factor = 1.13975636159;
-float sumw = 4.20575e+10;
-float scale_val = (k_factor*fil_eff*XSEC*luminosity*1000.0)/sumw;
-*/
 
 void Get_Scale_val(std::unordered_map<std::string, ScaleFactor>& SF){
 

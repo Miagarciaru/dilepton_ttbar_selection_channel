@@ -26,27 +26,13 @@ sample_paths = [
     "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410658.PhPy8EG_A14_tchan_BW50_lept_top.root"
 ]
 
-"""
-sample_paths = [
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/ttbar.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410644.PowhegPythia8EvtGen_A14_singletop_schan_lept_top.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410645.PowhegPythia8EvtGen_A14_singletop_schan_lept_antitop.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410659.PhPy8EG_A14_tchan_BW50_lept_antitop.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.601352.PhPy8EG_tW_dyn_DR_incl_antitop.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.601353.PhPy8EG_tW_dyn_DR_dil_antitop.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.601354.PhPy8EG_tW_dyn_DR_dil_top.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.601355.PhPy8EG_tW_dyn_DR_incl_top.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410218.aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttee.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410219.aMcAtNloPythia8EvtGen_MEN30NLO_A14N23LO_ttmumu.root",
-    "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/ntuples-mc-samples/mc-samples/mc20_13TeV.410658.PhPy8EG_A14_tchan_BW50_lept_top.root"
-]
-"""
-
 # Root folder for storing output
 output_root_folder = "output_analysis"
+output_plots_folder = "distribution_plots"
 
 # Ensure the root folder exists
 os.makedirs(output_root_folder, exist_ok=True)
+os.makedirs(output_plots_folder, exist_ok=True)
 
 # Loop over each sample
 for sample in sample_paths:
