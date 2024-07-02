@@ -75,7 +75,7 @@ void ttbar_selection(TString sample_path, TString sample_name){
   }
 
   // Create ROOT file
-  TString output_name = "output_analysis/"+sample_name+".root";
+  TString output_name = "output_analysis_wo_SFPhotons/"+sample_name+".root";
   TFile* outFile = new TFile(output_name, "RECREATE");
     
   // Write histograms to file

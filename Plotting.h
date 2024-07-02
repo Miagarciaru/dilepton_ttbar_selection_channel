@@ -1,18 +1,60 @@
 #include "AtlasStyle/AtlasStyle.C"
 #include "AtlasStyle/AtlasUtils.C"
 #include "AtlasStyle/AtlasLabels.C"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+
+struct ScaleFactor {
+  std::string name_file;
+  float xsec;
+  float efficiency;
+  float kfactor;
+  float sumw;
+  float SF_hist;
+};
 
 float luminosity = 36.0;
 float fraction = 1.0;
+/*
 float XSEC = 729.77;
 float fil_eff = 0.1053695;
 float k_factor = 1.13975636159;
 float sumw = 4.20575e+10;
 float scale_val = (k_factor*fil_eff*XSEC*luminosity*1000.0)/sumw;
+*/
+
+void Get_Scale_val(std::unordered_map<std::string, ScaleFactor>& SF){
+
+  std::string input_file = "info_file.txt";
+  ifstream input(input_file.c_str());  
+  std::string line;
+  while(getline(input,line)){
+    if (line.find("#") != line.npos ) continue; // a # is a comment and not read
+    std::string name, XSEC, sum_w, eff, kfac;
+    istringstream linestream(line);
+    getline(linestream, name, '|');
+    getline(linestream, XSEC, '|');
+    getline(linestream, sum_w, '|');
+    getline(linestream, eff, '|');
+    getline(linestream, kfac);
+    //if (DEBUG) cout << name << " " << xsec << " " << sumw << " " << eff << endl;
+    ScaleFactor factors;
+    factors.name_file = name;
+    factors.xsec = atof(XSEC.c_str());
+    factors.efficiency = atof(eff.c_str());
+    factors.kfactor = atof(kfac.c_str());
+    factors.sumw = atof(sum_w.c_str());
+    factors.SF_hist = (atof(kfac.c_str())*atof(eff.c_str())*atof(XSEC.c_str())*luminosity*1000)/(atof(sum_w.c_str()));
+    SF[name] = factors;
+  }
+  
+}
 
 // Function to get a list of histograms from a ROOT file
 void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::string& histName, std::vector<TH1F*>& dataHists,
-			    std::vector<TH1F*>& mcHists){
+			    std::vector<TH1F*>& ttbarHists, std::vector<TH1F*>& stopHists, const std::unordered_map<std::string, ScaleFactor>& SF){
 
   string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis_wo_SFPhotons/";
 
@@ -27,8 +69,13 @@ void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::st
     if(file.find("data") != std::string::npos){
       dataHists.push_back(hist);
     }
+    else if(file.find("ttbar") != std::string::npos){
+      hist->Scale(SF.at(file.c_str()).SF_hist);
+      ttbarHists.push_back(hist);
+    }
     else{
-      mcHists.push_back(hist);
+      hist->Scale(SF.at(file.c_str()).SF_hist);
+      stopHists.push_back(hist);
     }
 
     f->Close();
@@ -38,48 +85,73 @@ void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::st
 
 
 // Function to plot a given histogram
-void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& mcHists) {
+void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& ttbarHists, const std::vector<TH1F*>& stopHists){
 
   SetAtlasStyle();
 
   bool log_scale = false;
-  float scale_val = 0;
   
   TCanvas* can = new TCanvas(("c_" + histName).c_str(), histName.c_str(), 800, 600);
   THStack* hstack = new THStack(("hs_" + histName).c_str(), histName.c_str());
 
   // Create a combined data histogram
-  TH1F* data_hist = nullptr;
+  TH1F* hist_data = nullptr;
+  
   for(const auto& hist : dataHists){
-    if(data_hist == nullptr){
-      data_hist = dynamic_cast<TH1F*>(hist->Clone(("data_" + histName).c_str()));
-      data_hist->SetDirectory(0); // Detach from file
+    if(hist_data == nullptr){
+      hist_data = dynamic_cast<TH1F*>(hist->Clone(("data_" + histName).c_str()));
+      hist_data->SetDirectory(0); // Detach from file
     }
     else{
-      data_hist->Add(hist);
+      hist_data->Add(hist);
     }
   }
 
-  data_hist->SetMarkerStyle(20);
-  data_hist->SetMarkerColor(kBlack);
-  data_hist->SetMarkerSize(1.2);
-  data_hist->SetLineWidth(2);
-  data_hist->SetStats(0);
+  hist_data->SetMarkerStyle(20);
+  hist_data->SetMarkerColor(kBlack);
+  hist_data->SetMarkerSize(1.2);
+  hist_data->SetLineWidth(2);
+  hist_data->SetStats(0);
 
-  // Add MC histograms to stack
-  TH1F* ttbar_hist = nullptr;
-  for(const auto& hist : mcHists){
+  
+  TH1F* hist_ttbar = nullptr;
+  for(const auto& hist : ttbarHists){
     /* // MC overflow
     if( TMath::Abs(hist->GetBinContent(hist->GetNbinsX()+1)) > 0 ){
       hist->AddBinContent(hist->GetNbinsX(), hist->GetBinContent(hist->GetNbinsX()+1));
     }
     */
-    hist->Scale(scale_val);
-    hist->SetFillColorAlpha(kOrange, 0.45);
-    ttbar_hist = hist;
-    hstack->Add(hist);
+    if(hist_ttbar == nullptr){
+      hist_ttbar = dynamic_cast<TH1F*>(hist->Clone(("ttbar_" + histName).c_str()));
+      hist_ttbar->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_ttbar->Add(hist);
+    }
+    
+    //hist->Scale(scale_val);
+    //hist->SetFillColorAlpha(kOrange, 0.45);
+    //hist_ttbar = hist;
+    //hstack->Add(hist);
   }
-  cout << "The scaling values is " << scale_val << endl;
+  
+  TH1F* hist_stop = nullptr;
+  for(const auto& hist : stopHists){
+    if(hist_stop == nullptr){
+      hist_stop = dynamic_cast<TH1F*>(hist->Clone(("stop_" + histName).c_str()));
+      hist_stop->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_stop->Add(hist);
+    }
+  }
+
+  // Add MC histograms to stack
+  hist_ttbar->SetFillColorAlpha(kOrange, 0.45);
+  hist_stop->SetFillColorAlpha(kBlue, 0.45);
+  
+  hstack->Add(hist_ttbar);
+  hstack->Add(hist_stop);
   
   can->Divide(1, 2);
   
@@ -129,8 +201,9 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   }
   
   // statistical error histogram
-  TH1F *h_err = (TH1F*) ttbar_hist->Clone();
-
+  TH1F *h_err = (TH1F*) hist_ttbar->Clone();
+  h_err->Add(hist_stop);
+    
   h_err->SetFillStyle(3004);
   //h_err->SetFillStyle(3354);
   h_err->SetFillColor(kGray+1);
@@ -142,11 +215,12 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   //h_err->Draw("e2same");
   h_err->Draw("e3same");
   //data_hist->SetTitle("Entries");
-  data_hist->GetYaxis()->SetTitle(data_hist->GetYaxis()->GetTitle());
-  data_hist->Draw("epsame");
+  hist_data->GetYaxis()->SetTitle(hist_data->GetYaxis()->GetTitle());
+  hist_data->Draw("epsame");
     
-  leg->AddEntry(data_hist, "Data", "lep");
-  leg->AddEntry(ttbar_hist, "t#bar{t}","f");
+  leg->AddEntry(hist_data, "Data", "lep");
+  leg->AddEntry(hist_ttbar, "t#bar{t}","f");
+  leg->AddEntry(hist_stop, "Single top","f");
   leg->AddEntry(h_err, "Stat. unc.","f");
   leg->SetBorderSize();
   leg->Draw();
@@ -162,7 +236,7 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   // Draw the ratio plot on the lower pad
   pad1->cd();
   TH1F* h_mc_sum = dynamic_cast<TH1F*>(hstack->GetStack()->Last());
-  TH1F* h_ratio = (TH1F*)data_hist->Clone("h_ratio");
+  TH1F* h_ratio = (TH1F*)hist_data->Clone("h_ratio");
   h_ratio->Divide(h_mc_sum);  // Get the ratio between data and the summed histogram from the stack
 
   h_ratio->SetMinimum(0);
@@ -183,7 +257,7 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   h_ratio->GetYaxis()->SetLabelOffset(0.01);
   
   // Set X-axis labels
-  h_ratio->GetXaxis()->SetTitle(data_hist->GetXaxis()->GetTitle());
+  h_ratio->GetXaxis()->SetTitle(hist_data->GetXaxis()->GetTitle());
   h_ratio->GetXaxis()->SetTitleSize(0.15);
   h_ratio->GetXaxis()->SetLabelSize(0.13);
   h_ratio->GetXaxis()->SetTitleOffset(1.2);
@@ -205,23 +279,37 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   delete can;
   delete hstack;
   delete leg;
-  if (data_hist) delete data_hist;
+  if (hist_data) delete hist_data;
   
 }
 
 
 // Main function to create plots for specific histograms
 void CreateComparisonPlots(const std::vector<std::string>& files, const std::vector<std::string>& histNames) {
-    for (const auto& histName : histNames) {
-        std::vector<TH1F*> dataHists;
-        std::vector<TH1F*> mcHists;
-        GetHistogramsFromFiles(files, histName, dataHists, mcHists);
-        PlotHistogram(histName, dataHists, mcHists);
-        
-        // Clean up histograms
-        for (auto hist : dataHists) delete hist;
-        for (auto hist : mcHists) delete hist;
-    }
+  //PlotHistogram(histName, dataHists, mcHists, stopHists);
+  std::unordered_map<std::string, ScaleFactor> SF_val;
+  Get_Scale_val(SF_val);
+
+  for(const auto& variable_entry : SF_val) {
+    const std::string& variable_name = variable_entry.first;
+    const ScaleFactor& scf_val = variable_entry.second;
+
+    cout << variable_name << "\t" << scf_val.xsec << "\t" << scf_val.sumw << "\t" << scf_val.efficiency << "\t" << scf_val.kfactor << "\t" << scf_val.SF_hist << endl;
+  }
+
+  for (const auto& histName : histNames) {
+    std::vector<TH1F*> dataHists;
+    std::vector<TH1F*> ttbarHists;
+    std::vector<TH1F*> stopHists;
+    GetHistogramsFromFiles(files, histName, dataHists, ttbarHists, stopHists, SF_val);
+
+    PlotHistogram(histName, dataHists, ttbarHists, stopHists);
+
+    // Clean up histograms
+    for (auto hist : dataHists) delete hist;
+    for (auto hist : ttbarHists) delete hist;
+    for (auto hist : stopHists) delete hist;
+  }
 }
 
 /*
