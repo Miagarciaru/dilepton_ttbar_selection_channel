@@ -14,11 +14,83 @@ bool flavour_leptons_cut();
 bool lepton_trigger_cut();
 bool good_leptons_n_cut();
 void set_branch_address(TChain *inChain);
-
+void mc_overflow();
 
 // *************************************
 // Definition of the functions declared above
 // *************************************
+
+void mc_overflow(){
+
+  //*******************************************
+  // Add the contents of the underflow bin to the first bin
+  //*******************************************
+
+  // For hist_ScaleFactor_PILEUP
+  if (TMath::Abs(hist_ScaleFactor_PILEUP->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_PILEUP->AddBinContent(1, hist_ScaleFactor_PILEUP->GetBinContent(0));
+  }
+
+  // For hist_ScaleFactor_BTAG
+  if (TMath::Abs(hist_ScaleFactor_BTAG->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_BTAG->AddBinContent(1, hist_ScaleFactor_BTAG->GetBinContent(0));
+  }
+
+  // For hist_ScaleFactor_ELE
+  if (TMath::Abs(hist_ScaleFactor_ELE->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_ELE->AddBinContent(1, hist_ScaleFactor_ELE->GetBinContent(0));
+  }
+
+  // For hist_ScaleFactor_MUON
+  if (TMath::Abs(hist_ScaleFactor_MUON->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_MUON->AddBinContent(1, hist_ScaleFactor_MUON->GetBinContent(0));
+  }
+
+  // For hist_ScaleFactor_PHOTON
+  if (TMath::Abs(hist_ScaleFactor_PHOTON->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_PHOTON->AddBinContent(1, hist_ScaleFactor_PHOTON->GetBinContent(0));
+  }
+
+  // For hist_ScaleFactor_TAU
+  if (TMath::Abs(hist_ScaleFactor_TAU->GetBinContent(0)) > 0) {
+    hist_ScaleFactor_TAU->AddBinContent(1, hist_ScaleFactor_TAU->GetBinContent(0));
+  }
+
+  //*******************************************
+  // Add the contents of the overflow bin to the first bin
+  //*******************************************
+
+  // For hist_ScaleFactor_PILEUP
+  if( TMath::Abs(hist_ScaleFactor_PILEUP->GetBinContent(hist_ScaleFactor_PILEUP->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_PILEUP->AddBinContent(hist_ScaleFactor_PILEUP->GetNbinsX(), hist_ScaleFactor_PILEUP->GetBinContent(hist_ScaleFactor_PILEUP->GetNbinsX()+1));
+  }
+
+  // For hist_ScaleFactor_BTAG
+  if( TMath::Abs(hist_ScaleFactor_BTAG->GetBinContent(hist_ScaleFactor_BTAG->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_BTAG->AddBinContent(hist_ScaleFactor_BTAG->GetNbinsX(), hist_ScaleFactor_BTAG->GetBinContent(hist_ScaleFactor_BTAG->GetNbinsX()+1));
+  }
+
+  // For hist_ScaleFactor_ELE
+  if( TMath::Abs(hist_ScaleFactor_ELE->GetBinContent(hist_ScaleFactor_ELE->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_ELE->AddBinContent(hist_ScaleFactor_ELE->GetNbinsX(), hist_ScaleFactor_ELE->GetBinContent(hist_ScaleFactor_ELE->GetNbinsX()+1));
+  }
+  
+  // For hist_ScaleFactor_MUON
+  if( TMath::Abs(hist_ScaleFactor_MUON->GetBinContent(hist_ScaleFactor_MUON->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_MUON->AddBinContent(hist_ScaleFactor_MUON->GetNbinsX(), hist_ScaleFactor_MUON->GetBinContent(hist_ScaleFactor_MUON->GetNbinsX()+1));
+  }
+
+  // For hist_ScaleFactor_PHOTON
+  if( TMath::Abs(hist_ScaleFactor_PHOTON->GetBinContent(hist_ScaleFactor_PHOTON->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_PHOTON->AddBinContent(hist_ScaleFactor_PHOTON->GetNbinsX(), hist_ScaleFactor_PHOTON->GetBinContent(hist_ScaleFactor_PHOTON->GetNbinsX()+1));
+  }
+
+  // For hist_ScaleFactor_TAU
+  if( TMath::Abs(hist_ScaleFactor_TAU->GetBinContent(hist_ScaleFactor_TAU->GetNbinsX()+1)) > 0 ){
+    hist_ScaleFactor_TAU->AddBinContent(hist_ScaleFactor_TAU->GetNbinsX(), hist_ScaleFactor_TAU->GetBinContent(hist_ScaleFactor_TAU->GetNbinsX()+1));
+  }
+  
+}
 
 void fill_hist_scale_factors(){
 
