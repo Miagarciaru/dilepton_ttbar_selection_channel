@@ -46,12 +46,13 @@ void Get_Scale_val(std::unordered_map<std::string, ScaleFactor>& SF){
 }
 
 // Function to get a list of histograms from a ROOT file
-void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::string& histName, std::vector<TH1F*>& dataHists,
-			    std::vector<TH1F*>& ttbarHists, std::vector<TH1F*>& stopHists, const std::unordered_map<std::string, ScaleFactor>& SF){
+void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::string& histName, std::vector<TH1F*>& fileHists,
+			    const std::unordered_map<std::string, ScaleFactor>& SF){
 
   string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis_wo_SFPhotons/";
 
   cout << histName << endl;
+  
   for(const auto& file : files){
 
     string path_root_file = path_folder+file+".root";
@@ -60,15 +61,11 @@ void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::st
     hist->SetDirectory(0);
     
     if(file.find("data") != std::string::npos){
-      dataHists.push_back(hist);
-    }
-    else if(file.find("ttbar") != std::string::npos){
-      hist->Scale(SF.at(file.c_str()).SF_hist);
-      ttbarHists.push_back(hist);
+      fileHists.push_back(hist);
     }
     else{
       hist->Scale(SF.at(file.c_str()).SF_hist);
-      stopHists.push_back(hist);
+      fileHists.push_back(hist);
     }
 
     f->Close();
@@ -78,7 +75,7 @@ void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::st
 
 
 // Function to plot a given histogram
-void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& ttbarHists, const std::vector<TH1F*>& stopHists){
+void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& ttbarHists, const std::vector<TH1F*>& stopHists, const std::vector<TH1F*>& dibosonHists){
 
   SetAtlasStyle();
 
@@ -102,7 +99,7 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 
   hist_data->SetMarkerStyle(20);
   hist_data->SetMarkerColor(kBlack);
-  hist_data->SetMarkerSize(1.2);
+  hist_data->SetMarkerSize(1.0);
   hist_data->SetLineWidth(2);
   hist_data->SetStats(0);
 
@@ -121,11 +118,6 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
     else{
       hist_ttbar->Add(hist);
     }
-    
-    //hist->Scale(scale_val);
-    //hist->SetFillColorAlpha(kOrange, 0.45);
-    //hist_ttbar = hist;
-    //hstack->Add(hist);
   }
   
   TH1F* hist_stop = nullptr;
@@ -139,16 +131,29 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
     }
   }
 
+  TH1F* hist_diboson = nullptr;
+  for(const auto& hist : dibosonHists){
+    if(hist_diboson == nullptr){
+      hist_diboson = dynamic_cast<TH1F*>(hist->Clone(("diboson_" + histName).c_str()));
+      hist_diboson->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_diboson->Add(hist);
+    }
+  }
+
   // Add MC histograms to stack
   hist_ttbar->SetFillColorAlpha(kOrange, 0.45);
   hist_stop->SetFillColorAlpha(kBlue, 0.45);
+  hist_diboson->SetFillColorAlpha(kRed, 0.45);
   
   hstack->Add(hist_ttbar);
   hstack->Add(hist_stop);
+  hstack->Add(hist_diboson);
   
   can->Divide(1, 2);
   
-  TLegend *leg = new TLegend(0.7, 0.70, 0.85, 0.85);
+  TLegend *leg = new TLegend(0.7, 0.60, 0.85, 0.85);
 
   // Adjust the pads for better visuals
   TPad* pad0 = (TPad*)can->cd(1);
@@ -196,7 +201,8 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   // statistical error histogram
   TH1F *h_err = (TH1F*) hist_ttbar->Clone();
   h_err->Add(hist_stop);
-    
+  h_err->Add(hist_diboson);
+  
   h_err->SetFillStyle(3004);
   //h_err->SetFillStyle(3354);
   h_err->SetFillColor(kGray+1);
@@ -214,6 +220,7 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   leg->AddEntry(hist_data, "Data", "lep");
   leg->AddEntry(hist_ttbar, "t#bar{t}","f");
   leg->AddEntry(hist_stop, "Single top","f");
+  leg->AddEntry(hist_diboson, "VV+jets","f");
   leg->AddEntry(h_err, "Stat. unc.","f");
   leg->SetBorderSize();
   leg->Draw();
@@ -263,6 +270,8 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   TLine* line = new TLine(h_ratio->GetXaxis()->GetXmin(), 1, h_ratio->GetXaxis()->GetXmax(), 1);
   line->SetLineStyle(2);  // Dashed line 2
   line->Draw();
+  
+  pad1->SetGrid(); // Set Grid in the bottom box
 
   // Save plot
   std::string outputFileName = "distribution_plots/" + histName + ".png";
@@ -278,8 +287,10 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 
 
 // Main function to create plots for specific histograms
-void CreateComparisonPlots(const std::vector<std::string>& files, const std::vector<std::string>& histNames) {
-  //PlotHistogram(histName, dataHists, mcHists, stopHists);
+void CreateComparisonPlots(const std::vector<std::string>& files_data, const std::vector<std::string>& files_ttbar,
+			   const std::vector<std::string>& files_stop, const std::vector<std::string>& files_diboson,
+			   const std::vector<std::string>& histNames){
+  
   std::unordered_map<std::string, ScaleFactor> SF_val;
   Get_Scale_val(SF_val);
 
@@ -294,14 +305,20 @@ void CreateComparisonPlots(const std::vector<std::string>& files, const std::vec
     std::vector<TH1F*> dataHists;
     std::vector<TH1F*> ttbarHists;
     std::vector<TH1F*> stopHists;
-    GetHistogramsFromFiles(files, histName, dataHists, ttbarHists, stopHists, SF_val);
+    std::vector<TH1F*> dibosonHists;
 
-    PlotHistogram(histName, dataHists, ttbarHists, stopHists);
+    GetHistogramsFromFiles(files_data, histName, dataHists, SF_val);
+    GetHistogramsFromFiles(files_ttbar, histName, ttbarHists, SF_val);
+    GetHistogramsFromFiles(files_stop, histName, stopHists, SF_val);
+    GetHistogramsFromFiles(files_diboson, histName, dibosonHists, SF_val);
+
+    PlotHistogram(histName, dataHists, ttbarHists, stopHists, dibosonHists);
 
     // Clean up histograms
     for (auto hist : dataHists) delete hist;
     for (auto hist : ttbarHists) delete hist;
     for (auto hist : stopHists) delete hist;
+    for (auto hist : dibosonHists) delete hist;
   }
 }
 
