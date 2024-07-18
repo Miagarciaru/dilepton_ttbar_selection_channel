@@ -6,8 +6,6 @@ TString process_name = "";
 float lumi = 36.0;
 float fraction = 1.0;
 float XSEC;
-float fil_eff = 0.1053695;
-float k_factor = 1.13975636159;
 
 // *************************************
 // Declaration of leaf variables

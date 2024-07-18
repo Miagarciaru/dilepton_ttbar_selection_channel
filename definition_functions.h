@@ -14,13 +14,13 @@ bool flavour_leptons_cut();
 bool lepton_trigger_cut();
 bool good_leptons_n_cut();
 void set_branch_address(TChain *inChain);
-void mc_overflow();
+void mc_under_and_overflow();
 
 // *************************************
 // Definition of the functions declared above
 // *************************************
 
-void mc_overflow(){
+void mc_under_and_overflow(){
 
   //*******************************************
   // Add the contents of the underflow bin to the first bin
@@ -128,18 +128,23 @@ bool selection_good_bjets_cut(){
     int bjet_index = 0;
   
     for(unsigned int ii=0; ii<jet_n; ii++){
-      if( jet_pt->at(ii) <= 25. || TMath::Abs(jet_eta->at(ii)) >= 2.5 ) continue;
 
-        // JVT cleaning
+      if( (jet_pt->at(ii)<=25.) || (TMath::Abs(jet_eta->at(ii))>=2.5) ) continue;
+
+      // JVT cleaning
+      
       if ( jet_pt->at(ii) < 60. ){
 	if( jet_jvt->size()==0 ) continue;
 	if( (TMath::Abs(jet_eta->at(ii)) < 2.4) && (jet_jvt->at(ii)==false) ) continue;
       }
-        
+
+      //if( jet_jvt->size()==0 ) continue;
+      //if( jet_jvt->at(ii)==false ) continue;
+      
       // cut on b-tagged
-      if( jet_DL1d77_isBtagged->size()==0) continue;
+      if( jet_DL1d77_isBtagged->size()==0 ) continue;
       if( jet_DL1d77_isBtagged->at(ii)==true ){
-	if(TMath::Abs(jet_eta->at(ii)) >= 2.5) continue;
+	if( TMath::Abs(jet_eta->at(ii)) >= 2.5 ) continue;
 	goodbjet_n++;
 	goodbjet_index[bjet_index] = ii;
 	bjet_index++;
@@ -187,13 +192,14 @@ bool good_leptons_n_cut(){
     if( lep_isTight->at(ii) == false ) continue;
     if( lep_isTightID->at(ii) == false ) continue;
     if( lep_isTightIso->at(ii) == false ) continue;
+
     // standard lepton isolation requirement => strict isolation
     if( lep_pt->at(ii) <= 25. ) continue;
     if( lep_ptvarcone30->at(ii)/lep_pt->at(ii) >= 0.1 ) continue; 
     if( lep_topoetcone20->at(ii)/lep_pt->at(ii) >= 0.1 ) continue;
+
     // electron selection
     if( lep_type->at(ii)==11 && TMath::Abs(lep_eta->at(ii))<2.47 && (TMath::Abs(lep_eta->at(ii))<1.37 || TMath::Abs(lep_eta->at(ii))>1.52) ){
-
       //Condition for transverse impact parameter
       if( TMath::Abs(lep_d0sig->at(ii)>=5) ) continue;
       if( TMath::Abs(lep_z0->at(ii)*TMath::Sin(leptemp.Theta()))>=0.5 ) continue;    
@@ -207,7 +213,6 @@ bool good_leptons_n_cut(){
       //Condition for transverse impact parameter      
       if( TMath::Abs(lep_d0sig->at(ii)>=3) ) continue; 
       if( TMath::Abs(lep_z0->at(ii)*TMath::Sin(leptemp.Theta()))>=0.5 ) continue;
-      
       goodlep_n++;
       goodlep_index[lep_index] = ii;
       lep_index++;
@@ -215,7 +220,7 @@ bool good_leptons_n_cut(){
   }
   
   if(goodlep_n!=2){ return false;}
-  //Exactly two good leptons, leading lepton with pT > 22 GeV and the subleading lepton with pT > 15 GeV
+  //Exactly two good leptons, leptons with pT > 25 GeV
   lep_index1 = goodlep_index[0];
   lep_index2 = goodlep_index[1];
   

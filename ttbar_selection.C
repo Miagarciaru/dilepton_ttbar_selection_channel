@@ -52,6 +52,9 @@ void ttbar_selection(TString sample_path, TString sample_name){
     
     //float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_PHOTON*ScaleFactor_TAU;
     float SF = ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_TAU;
+    //float SF = TMath::Abs(ScaleFactor_PILEUP*ScaleFactor_BTAG*ScaleFactor_ELE*ScaleFactor_MUON*ScaleFactor_TAU);
+
+    if( SF<0 ) continue;
     
     float weight = mcWeight*SF;
     if((ii==0) &&(is_data==false)) XSEC=xsec;    
@@ -68,14 +71,18 @@ void ttbar_selection(TString sample_path, TString sample_name){
     type_leptons_cut++;
     if( selection_good_bjets_cut()==false ) continue;
     bjets_cut++;
+    if( weight<0 ){
+      cout << "The event weight for the entry " << ii << " is negative: (mcWeight - weight - SF) -> " << mcWeight << "\t" << weight << "\t" << SF << endl;
+    }
     fill_histograms(weight);
     
     if(is_data==false) fill_hist_scale_factors();
-
   }
 
+  mc_under_and_overflow();
+  
   // Create ROOT file
-  TString output_name = "output_analysis_wo_SFPhotons/"+sample_name+".root";
+  TString output_name = "output_analysis/"+sample_name+".root";
   TFile* outFile = new TFile(output_name, "RECREATE");
     
   // Write histograms to file
@@ -121,14 +128,9 @@ void ttbar_selection(TString sample_path, TString sample_name){
       file++;
     }
     
-    cout << "The xsec for ttbar is " << XSEC << " pb" << endl;
-    cout << "The filter efficiency for ttbar is " << fil_eff << endl;
-    cout << "The k-factor for ttbar is " << k_factor << endl;
-    cout << "The fraction is " << fraction << endl;
-    cout << "Total sum of weights: " << totalSumOfWeights << endl;
-    
-    cout << "Scaling method 1 value " << XSEC*fil_eff*k_factor*lumi*fraction*1000.0/totalSumOfWeights << endl;
-    cout << "Scaling method 2 value " << XSEC*k_factor*lumi*fraction*1000.0/(totalSumOfWeights*fil_eff) << endl;
+    cout << "The xsec is: " << XSEC << " pb" << endl;
+    cout << "The fraction is: " << fraction << endl;
+    cout << "Total sum of weights is: " << totalSumOfWeights << endl;
   }
   
   auto end = chrono::steady_clock::now();
