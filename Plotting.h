@@ -49,7 +49,7 @@ void Get_Scale_val(std::unordered_map<std::string, ScaleFactor>& SF){
 void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::string& histName, std::vector<TH1F*>& fileHists,
 			    const std::unordered_map<std::string, ScaleFactor>& SF){
 
-  string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis_wo_SFPhotons/";
+  string path_folder = "/eos/user/g/garciarm/ntuple-production-samples/data15-16-ttbar/validation/output_analysis/";
 
   cout << histName << endl;
   
@@ -75,7 +75,9 @@ void GetHistogramsFromFiles(const std::vector<std::string>& files, const std::st
 
 
 // Function to plot a given histogram
-void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& ttbarHists, const std::vector<TH1F*>& stopHists, const std::vector<TH1F*>& dibosonHists){
+void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHists, const std::vector<TH1F*>& ttbarHists,
+		   const std::vector<TH1F*>& stopHists, const std::vector<TH1F*>& dibosonHists, const std::vector<TH1F*>& wjetsHists,
+		   const std::vector<TH1F*>& zjetsHists, const std::vector<TH1F*>& ttOthersHists){
 
   SetAtlasStyle();
 
@@ -106,11 +108,6 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   
   TH1F* hist_ttbar = nullptr;
   for(const auto& hist : ttbarHists){
-    /* // MC overflow
-    if( TMath::Abs(hist->GetBinContent(hist->GetNbinsX()+1)) > 0 ){
-      hist->AddBinContent(hist->GetNbinsX(), hist->GetBinContent(hist->GetNbinsX()+1));
-    }
-    */
     if(hist_ttbar == nullptr){
       hist_ttbar = dynamic_cast<TH1F*>(hist->Clone(("ttbar_" + histName).c_str()));
       hist_ttbar->SetDirectory(0); // Detach from file
@@ -142,18 +139,57 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
     }
   }
 
+  TH1F* hist_wjets = nullptr;
+  for(const auto& hist : wjetsHists){
+    if(hist_wjets == nullptr){
+      hist_wjets = dynamic_cast<TH1F*>(hist->Clone(("wjets_" + histName).c_str()));
+      hist_wjets->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_wjets->Add(hist);
+    }
+  }
+  
+  TH1F* hist_zjets = nullptr;
+  for(const auto& hist : zjetsHists){
+    if(hist_zjets == nullptr){
+      hist_zjets = dynamic_cast<TH1F*>(hist->Clone(("zjets_" + histName).c_str()));
+      hist_zjets->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_zjets->Add(hist);
+    }
+  }
+
+  TH1F* hist_ttOthers = nullptr;
+  for(const auto& hist : ttOthersHists){
+    if(hist_ttOthers == nullptr){
+      hist_ttOthers = dynamic_cast<TH1F*>(hist->Clone(("ttOthers_" + histName).c_str()));
+      hist_ttOthers->SetDirectory(0); // Detach from file
+    }
+    else{
+      hist_ttOthers->Add(hist);
+    }
+  }
+  
   // Add MC histograms to stack
   hist_ttbar->SetFillColorAlpha(kOrange, 0.45);
   hist_stop->SetFillColorAlpha(kBlue, 0.45);
   hist_diboson->SetFillColorAlpha(kRed, 0.45);
+  hist_wjets->SetFillColorAlpha(kGreen, 0.45);
+  hist_zjets->SetFillColorAlpha(kViolet, 0.45);
+  hist_ttOthers->SetFillColorAlpha(kCyan, 0.45);
   
-  hstack->Add(hist_ttbar);
-  hstack->Add(hist_stop);
+  hstack->Add(hist_wjets);
+  hstack->Add(hist_zjets);
   hstack->Add(hist_diboson);
+  hstack->Add(hist_ttOthers);
+  hstack->Add(hist_stop);
+  hstack->Add(hist_ttbar);
   
   can->Divide(1, 2);
   
-  TLegend *leg = new TLegend(0.7, 0.60, 0.85, 0.85);
+  TLegend *leg = new TLegend(0.7, 0.55, 0.85, 0.90);
 
   // Adjust the pads for better visuals
   TPad* pad0 = (TPad*)can->cd(1);
@@ -202,6 +238,9 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   TH1F *h_err = (TH1F*) hist_ttbar->Clone();
   h_err->Add(hist_stop);
   h_err->Add(hist_diboson);
+  h_err->Add(hist_wjets);
+  h_err->Add(hist_zjets);
+  h_err->Add(hist_ttOthers);
   
   h_err->SetFillStyle(3004);
   //h_err->SetFillStyle(3354);
@@ -221,6 +260,9 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
   leg->AddEntry(hist_ttbar, "t#bar{t}","f");
   leg->AddEntry(hist_stop, "Single top","f");
   leg->AddEntry(hist_diboson, "VV+jets","f");
+  leg->AddEntry(hist_wjets, "W+jets","f");
+  leg->AddEntry(hist_zjets, "Z+jets","f");
+  leg->AddEntry(hist_ttOthers, "t#bar{t}V, t#bar{t}jj, t#bar{t}Vjj","f");
   leg->AddEntry(h_err, "Stat. unc.","f");
   leg->SetBorderSize();
   leg->Draw();
@@ -289,7 +331,8 @@ void PlotHistogram(const std::string& histName, const std::vector<TH1F*>& dataHi
 // Main function to create plots for specific histograms
 void CreateComparisonPlots(const std::vector<std::string>& files_data, const std::vector<std::string>& files_ttbar,
 			   const std::vector<std::string>& files_stop, const std::vector<std::string>& files_diboson,
-			   const std::vector<std::string>& histNames){
+			   const std::vector<std::string>& files_W_jets, const std::vector<std::string>& files_Z_jets,
+			   const std::vector<std::string>& files_tt_others, const std::vector<std::string>& histNames){
   
   std::unordered_map<std::string, ScaleFactor> SF_val;
   Get_Scale_val(SF_val);
@@ -306,19 +349,28 @@ void CreateComparisonPlots(const std::vector<std::string>& files_data, const std
     std::vector<TH1F*> ttbarHists;
     std::vector<TH1F*> stopHists;
     std::vector<TH1F*> dibosonHists;
-
+    std::vector<TH1F*> wjetsHists;
+    std::vector<TH1F*> zjetsHists;
+    std::vector<TH1F*> ttOthersHists;
+    
     GetHistogramsFromFiles(files_data, histName, dataHists, SF_val);
     GetHistogramsFromFiles(files_ttbar, histName, ttbarHists, SF_val);
     GetHistogramsFromFiles(files_stop, histName, stopHists, SF_val);
     GetHistogramsFromFiles(files_diboson, histName, dibosonHists, SF_val);
+    GetHistogramsFromFiles(files_W_jets, histName, wjetsHists, SF_val);
+    GetHistogramsFromFiles(files_Z_jets, histName, zjetsHists, SF_val);
+    GetHistogramsFromFiles(files_tt_others, histName, ttOthersHists, SF_val);
 
-    PlotHistogram(histName, dataHists, ttbarHists, stopHists, dibosonHists);
+    PlotHistogram(histName, dataHists, ttbarHists, stopHists, dibosonHists, wjetsHists, zjetsHists, ttOthersHists);
 
     // Clean up histograms
     for (auto hist : dataHists) delete hist;
     for (auto hist : ttbarHists) delete hist;
     for (auto hist : stopHists) delete hist;
     for (auto hist : dibosonHists) delete hist;
+    for (auto hist : wjetsHists) delete hist;
+    for (auto hist : zjetsHists) delete hist;
+    for (auto hist : ttOthersHists) delete hist;
   }
 }
 
